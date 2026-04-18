@@ -1,0 +1,71 @@
+import sqlite3
+
+def initialize_db():
+    """Initializes the database and creates the tasks table."""
+    try:
+        conn = sqlite3.connect('tasks.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                status TEXT DEFAULT 'Pending'
+            )
+        ''')
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        conn.close()
+
+def add_task(title):
+    """Adds a new task to the database."""
+    if not title:
+        print("Task title cannot be empty!")
+        return
+    try:
+        conn = sqlite3.connect('tasks.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO tasks (title) VALUES (?)', (title,))
+        conn.commit()
+        print(f"✔ Task '{title}' added.")
+    except sqlite3.Error as e:
+        print(f"Error adding task: {e}")
+    finally:
+        conn.close()
+
+def view_tasks():
+    """Displays all tasks from the database."""
+    try:
+        conn = sqlite3.connect('tasks.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM tasks')
+        tasks = cursor.fetchall()
+        if not tasks:
+            print("No tasks found.")
+        else:
+            print("\n--- Your Tasks ---")
+            for task in tasks:
+                print(f"[{task[0]}] {task[1]} - {task[2]}")
+    except sqlite3.Error as e:
+        print(f"Error retrieving tasks: {e}")
+    finally:
+        conn.close()
+
+def main():
+    initialize_db()
+    while True:
+        print("\n1. Add Task  2. View Tasks  3. Exit")
+        choice = input("Choose an option: ")
+        if choice == '1':
+            title = input("Enter task title: ")
+            add_task(title)
+        elif choice == '2':
+            view_tasks()
+        elif choice == '3':
+            break
+        else:
+            print("Invalid choice!")
+
+if __name__ == "__main__":
+    main()
